@@ -4,6 +4,7 @@
  *
  * Created on: Dec 13, 2016
  * Author: Tiffany Huang
+ * updated by Srinivas S
  */
 
 #ifndef HELPER_FUNCTIONS_H_
@@ -74,6 +75,11 @@ inline double * getError(double gt_x, double gt_y, double gt_theta, double pf_x,
   if (error[2] > M_PI) {
     error[2] = 2.0 * M_PI - error[2];
   }
+
+  /* pred - ground truth
+  pos_RMSE = sqrt (pow((pf_x - gt_x),2) + pow((pf_y - gt_y),2) )
+  theta_RMSE = sqrt ( pow((pf_theta - gt_theta),2) )
+  */
   return error;
 }
 
@@ -247,5 +253,28 @@ inline bool read_landmark_data(std::string filename,
   }
   return true;
 }
+
+/**
+ * function to calculate the multivariate probaility distribution function for map and observed landmarks
+ * the higher the probability the closer the transformed observation to the landmark
+*/
+inline double multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs, double mu_x, double mu_y) {
+
+  // calculate normalization term
+  double gauss_norm;
+  gauss_norm = 1 / (2 * M_PI * sig_x * sig_y);
+
+  // calculate exponent
+  double exponent;
+  exponent = (pow(x_obs - mu_x, 2) / (2 * pow(sig_x, 2)))
+           + (pow(y_obs - mu_y, 2) / (2 * pow(sig_y, 2)));
+
+  // calculate weight using normalization terms and exponent
+  double weight;
+  weight = gauss_norm * exp(-exponent);
+
+  return weight;
+}
+
 
 #endif  // HELPER_FUNCTIONS_H_
